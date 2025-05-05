@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "122384184043",
+    "project_id": "dacs-625cb",
+    "storage_bucket": "dacs-625cb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:122384184043:android:5764ec361198974188c4ae",
+        "android_client_info": {
+          "package_name": "com.yourname.dacs"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDCuefiJ2qxQ1fnhKQButdh-T40B6iDveo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
