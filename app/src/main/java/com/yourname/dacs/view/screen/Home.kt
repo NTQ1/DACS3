@@ -10,7 +10,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
@@ -23,9 +22,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.yourname.dacs.R
 import com.yourname.dacs.model.DanhMuc
 import com.yourname.dacs.view.components.AddDanhMucDialog
+import com.yourname.dacs.view.components.DeleteDanhMucDialog
 import com.yourname.dacs.view.components.getIconRes
 import com.yourname.dacs.viewmodel.DanhMucViewModel
 
@@ -36,6 +37,7 @@ fun HomeScreen(navController: NavHostController) {
     val tabs = listOf("Thu nhập", "Chi tiêu")
     var selectedTabIndex by remember { mutableStateOf(0) }
     var showDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     val allDanhMuc = viewModel.danhMucList
     val categories = allDanhMuc.filter { it.loai == if (selectedTabIndex == 0) "thu" else "chi" }
@@ -49,13 +51,13 @@ fun HomeScreen(navController: NavHostController) {
                             painter = painterResource(id = R.drawable.logo),
                             contentDescription = "Logo",
                             modifier = Modifier
-                                .size(200.dp)
+                                .size(180.dp)
                                 .padding(end = 8.dp)
                         )
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* TODO */ }) {
+                    IconButton(onClick = { /* TODO: Xử lý thông báo */ }) {
                         Icon(Icons.Default.Notifications, contentDescription = null)
                     }
                 }
@@ -76,7 +78,7 @@ fun HomeScreen(navController: NavHostController) {
                     TabRowDefaults.Indicator(
                         Modifier
                             .tabIndicatorOffset(tabPositions[selectedTabIndex])
-                            .height(4.dp),
+                            .height(3.dp),
                         color = activeColor
                     )
                 }
@@ -105,11 +107,11 @@ fun HomeScreen(navController: NavHostController) {
                     CategoryCard(item)
                 }
 
-                item {
-                    AddCategoryCard { showDialog = true }
-                }
+                item { AddCategoryCard { showDialog = true } }
+                item { DeleteCategoryCard { showDeleteDialog = true } }
             }
 
+            // Dialog Thêm Danh Mục
             if (showDialog) {
                 AddDanhMucDialog(
                     onDismiss = { showDialog = false },
@@ -117,6 +119,18 @@ fun HomeScreen(navController: NavHostController) {
                         val newDanhMuc = danhMuc.copy(loai = if (selectedTabIndex == 0) "thu" else "chi")
                         viewModel.addDanhMuc(newDanhMuc)
                         showDialog = false
+                    }
+                )
+            }
+
+            // Dialog Xoá Danh Mục
+            if (showDeleteDialog) {
+                DeleteDanhMucDialog(
+                    danhMucs = categories,
+                    onDismiss = { showDeleteDialog = false },
+                    onDelete = { selected ->
+                        selected.forEach { viewModel.deleteDanhMuc(it) }
+                        showDeleteDialog = false
                     }
                 )
             }
@@ -130,7 +144,7 @@ fun CategoryCard(item: DanhMuc) {
         modifier = Modifier
             .padding(8.dp)
             .clickable {
-                // TODO: xử lý khi click vào danh mục
+                // TODO: Mở màn hình chi tiết danh mục
             }
             .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -143,7 +157,7 @@ fun CategoryCard(item: DanhMuc) {
                     color = Color(android.graphics.Color.parseColor(item.mauSac)),
                     shape = RoundedCornerShape(16.dp)
                 ),
-            colors = CardDefaults.cardColors(containerColor = Color.White), // ✅ NỀN TRẮNg
+            colors = CardDefaults.cardColors(containerColor = Color.White),
             shape = RoundedCornerShape(16.dp)
         ) {
             Box(
@@ -164,7 +178,6 @@ fun CategoryCard(item: DanhMuc) {
         Text(text = item.ten, fontSize = 14.sp)
     }
 }
-
 
 @Composable
 fun AddCategoryCard(onClick: () -> Unit) {
@@ -199,6 +212,38 @@ fun AddCategoryCard(onClick: () -> Unit) {
 }
 
 @Composable
+fun DeleteCategoryCard(onClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .padding(8.dp)
+            .clickable { onClick() }
+            .fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Card(
+            modifier = Modifier.size(80.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFD32F2F)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_delete),
+                    contentDescription = "Xóa danh mục",
+                    tint = Color.White,
+                    modifier = Modifier.size(36.dp)
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(text = "Xóa", fontSize = 14.sp, color = Color(0xFFD32F2F))
+    }
+}
+
+@Composable
 fun BottomNavigationBar(navController: NavHostController) {
     val items = listOf(
         "home" to R.drawable.ic_home,
@@ -208,29 +253,33 @@ fun BottomNavigationBar(navController: NavHostController) {
         "setting" to R.drawable.ic_setting
     )
 
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+    val activeColor = Color(0xFFFF9800)
+
     Column {
-        // 🔹 Gạch phân cách phía trên thanh điều hướng
         Divider(color = Color.LightGray, thickness = 1.dp)
 
-        NavigationBar(
-            containerColor = Color.White // 🔹 Nền trắng
-        ) {
+        NavigationBar(containerColor = Color.White) {
             items.forEach { (route, iconRes) ->
                 NavigationBarItem(
                     icon = {
                         Icon(
                             painter = painterResource(id = iconRes),
                             contentDescription = route,
-                            modifier = Modifier.size(28.dp) // 🔹 Icon to hơn
+                            modifier = Modifier.size(35.dp),
+                            tint = if (currentRoute == route) activeColor else Color.Gray
                         )
                     },
-                    selected = false, // Nếu muốn, có thể xử lý trạng thái chọn
-                    onClick = { navController.navigate(route) },
-                    alwaysShowLabel = false // 🔹 Không hiện chữ
+                    selected = currentRoute == route,
+                    onClick = {
+                        if (currentRoute != route) {
+                            navController.navigate(route)
+                        }
+                    },
+                    alwaysShowLabel = false
                 )
             }
         }
     }
 }
-
-
