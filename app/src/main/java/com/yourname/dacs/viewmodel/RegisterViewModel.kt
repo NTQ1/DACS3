@@ -3,10 +3,13 @@ package com.yourname.dacs.viewmodel
 import android.content.Context
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.yourname.dacs.model.NguoiDung
 
 class RegisterViewModel : ViewModel() {
+
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
     fun registerUser(
         context: Context,
@@ -19,36 +22,43 @@ class RegisterViewModel : ViewModel() {
         onSuccess: () -> Unit,
         onFailure: (String) -> Unit
     ) {
+        if (email.isBlank() || fullName.isBlank() || password.isBlank() || confirmPassword.isBlank() || birthDate.isBlank()) {
+            Toast.makeText(context, "Vui lòng điền đầy đủ thông tin", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         if (password != confirmPassword) {
             Toast.makeText(context, "Mật khẩu nhập lại không khớp", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val database = FirebaseDatabase.getInstance()
-        val ref = database.getReference("Nguoidung")
-        val userId = generateRandomId(8)
+        auth.createUserWithEmailAndPassword(email, password)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val userId = auth.currentUser?.uid ?: return@addOnCompleteListener
 
-        val nguoiDung = NguoiDung(
-            Id = userId,
-            Email = email,
-            MatKhau = password,
-            Ten = fullName,
-            GioiTinh = gender,
-            NgaySinh = birthDate
-        )
+                    // 👉 Dùng UID làm Id luôn
+                    val nguoiDung = NguoiDung(
+                        Id = userId,
+                        Email = email,
+                        MatKhau = "", // không lưu mật khẩu rõ ràng
+                        Ten = fullName,
+                        GioiTinh = gender,
+                        NgaySinh = birthDate
+                    )
 
-        ref.child(userId).setValue(nguoiDung)
-            .addOnSuccessListener {
-                Toast.makeText(context, "Đăng ký thành công!", Toast.LENGTH_SHORT).show()
-                onSuccess()
+                    val ref = FirebaseDatabase.getInstance().getReference("Nguoidung")
+                    ref.child(userId).setValue(nguoiDung)
+                        .addOnSuccessListener {
+                            Toast.makeText(context, "Đăng ký thành công!", Toast.LENGTH_SHORT).show()
+                            onSuccess()
+                        }
+                        .addOnFailureListener {
+                            onFailure(it.message ?: "Lỗi khi lưu thông tin người dùng")
+                        }
+                } else {
+                    onFailure(task.exception?.message ?: "Lỗi khi đăng ký tài khoản")
+                }
             }
-            .addOnFailureListener {
-                onFailure(it.message ?: "Lỗi không xác định")
-            }
-    }
-
-    private fun generateRandomId(length: Int = 8): String {
-        val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-        return (1..length).map { chars.random() }.joinToString("")
     }
 }

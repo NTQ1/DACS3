@@ -2,6 +2,7 @@ package com.yourname.dacs.viewmodel
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.yourname.dacs.model.DanhMuc
 
@@ -15,26 +16,35 @@ class DanhMucViewModel : ViewModel() {
     }
 
     private fun loadDanhMuc() {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val accountId = currentUser?.uid ?: return
+
         danhMucRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 danhMucList.clear()
                 for (child in snapshot.children) {
                     val danhMuc = child.getValue(DanhMuc::class.java)
-                    danhMuc?.let { danhMucList.add(it) }
+                    if (danhMuc?.accountId == accountId) {
+                        danhMucList.add(danhMuc)
+                    }
                 }
             }
 
             override fun onCancelled(error: DatabaseError) {
-                // Có thể log lỗi tại đây nếu cần
+                // Log nếu cần
             }
         })
     }
 
+
     fun addDanhMuc(danhMuc: DanhMuc) {
         val id = generateShortId()
-        val newDanhMuc = danhMuc.copy(id = id)
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val accountId = currentUser?.uid ?: return
+        val newDanhMuc = danhMuc.copy(id = id, accountId = accountId)
         danhMucRef.child(id).setValue(newDanhMuc)
     }
+
 
     fun deleteDanhMuc(danhMuc: DanhMuc) {
         danhMucRef.child(danhMuc.id).removeValue()

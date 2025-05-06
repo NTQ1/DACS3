@@ -6,5 +6,5 @@ data class DanhMuc(
     var loai: String = "",
     var icon: String = "",
     var mauSac: String = "",
-    var userId: String = "" // ⚠️ Quan trọng: thêm userId
+    val accountId: String = "" // <-- thêm dòng này
 )

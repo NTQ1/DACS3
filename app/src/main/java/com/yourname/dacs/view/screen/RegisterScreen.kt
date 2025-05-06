@@ -21,7 +21,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yourname.dacs.R
 import com.yourname.dacs.viewmodel.RegisterViewModel
@@ -29,23 +28,22 @@ import java.util.*
 
 @Composable
 fun RegisterScreen(
-    onRegisterSuccess: () -> Unit = {},
-    onBackToLogin: () -> Unit = {}
+    onRegisterSuccess: () -> Unit,
+    onBackToLogin: () -> Unit
 ) {
     val OrangeYellow = Color(0xFFFFA726)
+
+    val context = LocalContext.current
+    val calendar = Calendar.getInstance()
 
     var email by remember { mutableStateOf("") }
     var fullName by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var gender by remember { mutableStateOf("Nam") }
-
+    var birthDate by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
-
-    val context = LocalContext.current
-    val calendar = Calendar.getInstance()
-    var birthDate by remember { mutableStateOf("") }
 
     val datePickerDialog = DatePickerDialog(
         context,
@@ -70,7 +68,7 @@ fun RegisterScreen(
 
             Image(
                 painter = painterResource(id = R.drawable.logo),
-                contentDescription = "Logo Pockit",
+                contentDescription = "Logo",
                 modifier = Modifier
                     .height(200.dp)
                     .padding(bottom = 16.dp)
@@ -88,11 +86,7 @@ fun RegisterScreen(
                     modifier = Modifier.padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(
-                        text = "Đăng ký tài khoản",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Text("Đăng ký tài khoản", fontSize = 24.sp, fontWeight = FontWeight.Bold)
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -100,11 +94,9 @@ fun RegisterScreen(
                         value = email,
                         onValueChange = { email = it },
                         label = { Text("Email") },
-                        leadingIcon = {
-                            Image(painter = painterResource(id = R.drawable.ic_mail), contentDescription = "Mail Icon")
-                        },
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp)
+                        shape = RoundedCornerShape(16.dp),
+                        leadingIcon = { Icon(painterResource(id = R.drawable.ic_mail), null) }
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -113,11 +105,9 @@ fun RegisterScreen(
                         value = fullName,
                         onValueChange = { fullName = it },
                         label = { Text("Họ và tên") },
-                        leadingIcon = {
-                            Image(painter = painterResource(id = R.drawable.ic_account), contentDescription = "Account icon")
-                        },
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp)
+                        shape = RoundedCornerShape(16.dp),
+                        leadingIcon = { Icon(painterResource(id = R.drawable.ic_account), null) }
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -126,23 +116,17 @@ fun RegisterScreen(
                         value = password,
                         onValueChange = { password = it },
                         label = { Text("Mật khẩu") },
-                        leadingIcon = {
-                            Image(painter = painterResource(id = R.drawable.ic_lock), contentDescription = "Lock icon")
-                        },
                         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        leadingIcon = { Icon(painterResource(id = R.drawable.ic_lock), null) },
                         trailingIcon = {
-                            val icon = if (passwordVisible)
-                                painterResource(id = R.drawable.visibility)
-                            else
-                                painterResource(id = R.drawable.visibilityoff)
                             Icon(
-                                painter = icon,
+                                painter = painterResource(id = if (passwordVisible) R.drawable.visibility else R.drawable.visibilityoff),
                                 contentDescription = null,
                                 modifier = Modifier.clickable { passwordVisible = !passwordVisible }
                             )
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp)
+                        }
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -151,45 +135,33 @@ fun RegisterScreen(
                         value = confirmPassword,
                         onValueChange = { confirmPassword = it },
                         label = { Text("Nhập lại mật khẩu") },
-                        leadingIcon = {
-                            Image(painter = painterResource(id = R.drawable.ic_lock), contentDescription = "Lock icon")
-                        },
                         visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        leadingIcon = { Icon(painterResource(id = R.drawable.ic_lock), null) },
                         trailingIcon = {
-                            val icon = if (confirmPasswordVisible)
-                                painterResource(id = R.drawable.visibility)
-                            else
-                                painterResource(id = R.drawable.visibilityoff)
                             Icon(
-                                painter = icon,
+                                painter = painterResource(id = if (confirmPasswordVisible) R.drawable.visibility else R.drawable.visibilityoff),
                                 contentDescription = null,
                                 modifier = Modifier.clickable { confirmPasswordVisible = !confirmPasswordVisible }
                             )
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp)
+                        }
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Box(
+                    OutlinedTextField(
+                        value = birthDate,
+                        onValueChange = {},
+                        label = { Text("Ngày sinh") },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { datePickerDialog.show() }
-                    ) {
-                        OutlinedTextField(
-                            value = birthDate,
-                            onValueChange = {},
-                            label = { Text("Ngày sinh") },
-                            readOnly = true,
-                            enabled = false,
-                            leadingIcon = {
-                                Icon(painter = painterResource(id = R.drawable.ic_calendar_today), contentDescription = null)
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(16.dp)
-                        )
-                    }
+                            .clickable { datePickerDialog.show() },
+                        readOnly = true,
+                        enabled = false,
+                        leadingIcon = { Icon(painter = painterResource(id = R.drawable.ic_calendar_today), contentDescription = null) },
+                        shape = RoundedCornerShape(16.dp)
+                    )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -197,7 +169,7 @@ fun RegisterScreen(
                     Row {
                         listOf("Nam", "Nữ", "Khác").forEach { option ->
                             Row(
-                                Modifier
+                                modifier = Modifier
                                     .selectable(
                                         selected = (gender == option),
                                         onClick = { gender = option },
@@ -206,8 +178,8 @@ fun RegisterScreen(
                                     .padding(end = 16.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                RadioButton(selected = (gender == option), onClick = { gender = option })
-                                Text(text = option)
+                                RadioButton(selected = (gender == option), onClick = null)
+                                Text(option)
                             }
                         }
                     }
@@ -225,8 +197,8 @@ fun RegisterScreen(
                                 gender = gender,
                                 birthDate = birthDate,
                                 onSuccess = onRegisterSuccess,
-                                onFailure = { message ->
-                                    Toast.makeText(context, "Đăng ký thất bại: $message", Toast.LENGTH_SHORT).show()
+                                onFailure = { msg ->
+                                    Toast.makeText(context, "Lỗi: $msg", Toast.LENGTH_SHORT).show()
                                 }
                             )
                         },
@@ -239,7 +211,7 @@ fun RegisterScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Text(
-                        text = "Đã có tài khoản? ",
+                        text = "Đã có tài khoản? Quay lại",
                         color = OrangeYellow,
                         modifier = Modifier.clickable { onBackToLogin() }
                     )
@@ -247,10 +219,4 @@ fun RegisterScreen(
             }
         }
     }
-}
-
-@Preview(showSystemUi = true)
-@Composable
-fun RegisterScreenPreview() {
-    RegisterScreen()
 }

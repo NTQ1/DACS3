@@ -14,7 +14,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -97,7 +96,6 @@ fun LoginScreenUI(
                             unfocusedContainerColor = Color.Transparent,
                             disabledContainerColor = Color.Transparent
                         )
-
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -134,7 +132,6 @@ fun LoginScreenUI(
                             unfocusedContainerColor = Color.Transparent,
                             disabledContainerColor = Color.Transparent
                         )
-
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -142,14 +139,21 @@ fun LoginScreenUI(
                     Button(
                         onClick = {
                             coroutineScope.launch {
-                                loginViewModel.login(email.trim(), password.trim()) { user ->
-                                    if (user != null) {
-                                        loginMessage = "Đăng nhập thành công!"
-                                        onLoginSuccess() // ✅ gọi điều hướng sang home
-                                    } else {
-                                        loginMessage = "Email hoặc mật khẩu không đúng!"
+                                loginViewModel.login(
+                                    email.trim(),
+                                    password.trim(),
+                                    onResult = { success, message ->
+                                        if (success) {
+                                            loginMessage = "Đăng nhập thành công!"
+                                            onLoginSuccess()
+                                        } else {
+                                            loginMessage = message ?: "Đăng nhập thất bại!"
+                                        }
+                                    },
+                                    onUserLoaded = { user ->
+                                        // Optional: bạn có thể lưu người dùng vào ViewModel/State/Session tại đây nếu cần
                                     }
-                                }
+                                )
                             }
                         },
                         modifier = Modifier.fillMaxWidth(),
@@ -192,11 +196,4 @@ fun LoginScreenUI(
             }
         }
     }
-}
-
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun LoginScreenPreview() {
-    LoginScreenUI()
 }
