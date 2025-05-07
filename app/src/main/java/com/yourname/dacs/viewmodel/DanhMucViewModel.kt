@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.yourname.dacs.model.DanhMuc
+import com.yourname.dacs.model.GiaoDich
 
 class DanhMucViewModel : ViewModel() {
 
@@ -56,4 +57,10 @@ class DanhMucViewModel : ViewModel() {
             .map { allowedChars.random() }
             .joinToString("")
     }
+    fun addGiaoDich(giaoDich: GiaoDich) {
+        val db = FirebaseDatabase.getInstance().getReference("giaodichs")
+        val id = db.push().key ?: return
+        db.child(id).setValue(giaoDich)
+    }
+
 }

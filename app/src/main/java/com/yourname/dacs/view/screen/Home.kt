@@ -23,12 +23,16 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.google.firebase.auth.FirebaseAuth
 import com.yourname.dacs.R
 import com.yourname.dacs.model.DanhMuc
 import com.yourname.dacs.view.components.AddDanhMucDialog
+import com.yourname.dacs.view.components.AddGiaoDichDialog
 import com.yourname.dacs.view.components.DeleteDanhMucDialog
 import com.yourname.dacs.view.components.getIconRes
 import com.yourname.dacs.viewmodel.DanhMucViewModel
+import com.yourname.dacs.viewmodel.GiaoDichViewModel
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,7 +42,7 @@ fun HomeScreen(navController: NavHostController) {
     var selectedTabIndex by remember { mutableStateOf(0) }
     var showDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
-
+    val giaoDichViewModel: GiaoDichViewModel = viewModel()
     val allDanhMuc = viewModel.danhMucList
     val categories = allDanhMuc.filter { it.loai == if (selectedTabIndex == 0) "thu" else "chi" }
 
@@ -104,7 +108,7 @@ fun HomeScreen(navController: NavHostController) {
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(categories) { item ->
-                    CategoryCard(item)
+                    CategoryCard(item,giaoDichViewModel)
                 }
 
                 item { AddCategoryCard { showDialog = true } }
@@ -139,12 +143,15 @@ fun HomeScreen(navController: NavHostController) {
 }
 
 @Composable
-fun CategoryCard(item: DanhMuc) {
+fun CategoryCard(item: DanhMuc, giaoDichViewModel: GiaoDichViewModel) {
+    val accountId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+    var showDialog by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .padding(8.dp)
             .clickable {
-                // TODO: Mở màn hình chi tiết danh mục
+                showDialog = true
             }
             .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -177,7 +184,24 @@ fun CategoryCard(item: DanhMuc) {
         Spacer(modifier = Modifier.height(8.dp))
         Text(text = item.ten, fontSize = 14.sp)
     }
+
+    if (showDialog) {
+        AddGiaoDichDialog(
+            danhMucId = item.id ?: "",
+            loai = item.loai,
+            accountId = accountId,
+            onDismiss = { showDialog = false },
+            onSave = { giaoDich ->
+                giaoDichViewModel.themGiaoDich(
+                    giaoDich = giaoDich,
+                    onSuccess = { showDialog = false },
+                    onFailure = { e -> println("Lỗi khi lưu: ${e.message}") }
+                )
+            }
+        )
+    }
 }
+
 
 @Composable
 fun AddCategoryCard(onClick: () -> Unit) {

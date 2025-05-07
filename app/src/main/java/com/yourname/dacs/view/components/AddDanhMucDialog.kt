@@ -26,7 +26,7 @@ fun AddDanhMucDialog(
 
     val iconList = listOf(
         "ic_cart", "ic_car", "ic_plane", "ic_food", "ic_cake", "ic_ice", "ic_money",
-        "ic_bank", "ic_electricity", "ic_game", "ic_gift", "ic_gym", "ic_water"
+        "ic_bank", "ic_electricity", "ic_game", "ic_gift", "ic_gym", "ic_water","ic_savemoney"
     )
 
     val colorList = listOf(
@@ -145,6 +145,7 @@ fun getIconRes(name: String): Int {
         "ic_gift" -> R.drawable.ic_gift
         "ic_gym" -> R.drawable.ic_gym
         "ic_water" -> R.drawable.ic_water
+        "ic_savemoney" -> R.drawable.ic_savemoney
         else -> R.drawable.ic_default
     }
 }
