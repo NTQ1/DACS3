@@ -17,6 +17,7 @@ import com.yourname.dacs.ui.theme.DACSTheme
 import com.yourname.dacs.view.screen.HomeScreen
 import com.yourname.dacs.view.screen.LoginScreenUI
 import com.yourname.dacs.view.screen.RegisterScreen
+import com.yourname.dacs.view.screen.TogetherScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -72,6 +73,9 @@ fun AppNavigation() {
 
             composable("home") {
                 HomeScreen(navController)
+            }
+            composable("savemoney") {
+                TogetherScreen(navController)
             }
 
 

@@ -6,6 +6,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.yourname.dacs.model.GiaoDich
+import java.text.SimpleDateFormat
+import java.util.*
 
 @Composable
 fun AddGiaoDichDialog(
@@ -19,6 +21,8 @@ fun AddGiaoDichDialog(
     var ghiChu by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
+    val thoiGian = remember { getCurrentFormattedTime() }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
@@ -31,7 +35,7 @@ fun AddGiaoDichDialog(
                             ghiChu = ghiChu,
                             danhMucId = danhMucId,
                             accountId = accountId,
-                            thoiGian = System.currentTimeMillis(),
+                            thoiGian = thoiGian,
                             loai = loai
                         )
                         onSave(giaoDich)
@@ -55,9 +59,17 @@ fun AddGiaoDichDialog(
         },
         title = { Text("Thêm Giao Dịch", style = MaterialTheme.typography.titleMedium) },
         text = {
-            Column(modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            ) {
+                Text(
+                    text = "Thời gian: $thoiGian",
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
                 OutlinedTextField(
                     value = soTien,
                     onValueChange = {
@@ -94,3 +106,8 @@ fun AddGiaoDichDialog(
     )
 }
 
+// Trả về thời gian hiện tại dưới dạng chuỗi định dạng chuẩn
+fun getCurrentFormattedTime(): String {
+    val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+    return sdf.format(Date())
+}

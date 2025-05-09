@@ -57,10 +57,6 @@ class DanhMucViewModel : ViewModel() {
             .map { allowedChars.random() }
             .joinToString("")
     }
-    fun addGiaoDich(giaoDich: GiaoDich) {
-        val db = FirebaseDatabase.getInstance().getReference("giaodichs")
-        val id = db.push().key ?: return
-        db.child(id).setValue(giaoDich)
-    }
+
 
 }

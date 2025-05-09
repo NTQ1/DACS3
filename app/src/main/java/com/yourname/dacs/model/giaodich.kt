@@ -6,6 +6,6 @@ data class GiaoDich(
     val ghiChu: String = "",
     val danhMucId: String = "",
     val accountId: String = "",
-    val thoiGian: Long = 0L,
+    val thoiGian: String = "",
     val loai: String = "" // "thu" hoặc "chi"
 )

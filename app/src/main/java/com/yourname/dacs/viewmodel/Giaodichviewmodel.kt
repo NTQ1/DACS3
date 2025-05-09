@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.yourname.dacs.model.GiaoDich
+import java.text.SimpleDateFormat
+import java.util.*
 
 class GiaoDichViewModel : ViewModel() {
 
@@ -23,9 +25,17 @@ class GiaoDichViewModel : ViewModel() {
             return
         }
 
-        val giaoDichWithId = giaoDich.copy(id = id, accountId = accountId)
+        // 🕒 Thêm ngày tạo dạng chuẩn
+        val thoiGian = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
 
-        db.child(id).setValue(giaoDichWithId)
+        // 🟢 Copy lại và thêm id + accountId + ngayTao
+        val giaoDichWithInfo = giaoDich.copy(
+            id = id,
+            accountId = accountId,
+            thoiGian = thoiGian
+        )
+
+        db.child(id).setValue(giaoDichWithInfo)
             .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { onFailure(it) }
     }
