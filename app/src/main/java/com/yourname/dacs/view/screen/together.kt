@@ -23,6 +23,7 @@ import com.yourname.dacs.view.components.AddHuChungDialog
 import com.yourname.dacs.viewmodel.HuChungViewModel
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.foundation.clickable
 
 @Composable
 fun TogetherScreen(
@@ -31,6 +32,7 @@ fun TogetherScreen(
 ) {
     var showDialog by remember { mutableStateOf(false) }
     val huChungList = huChungViewModel.huChungList
+    val isLoading by huChungViewModel.isLoading.collectAsState()
 
     Scaffold(
         bottomBar = {
@@ -76,14 +78,40 @@ fun TogetherScreen(
                 }
             }
 
-            // Danh sách Hũ từ Firebase
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            ) {
-                items(huChungList) { huChung ->
-                    HuChungCard(huChung)
+            // Hiển thị loading, danh sách rỗng hoặc danh sách hũ
+            when {
+                isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = Color(0xFFFFA726))
+                    }
+                }
+                huChungList.isEmpty() -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("Bạn chưa có hũ chung nào", color = Color.Gray)
+                    }
+                }
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        items(huChungList) { huChung ->
+                            HuChungCard(
+                                huChung = huChung,
+                                onDelete = { huChungViewModel.deleteHuChung(it) },
+                                onClick = {
+                                    navController.navigate("chitiet/${huChung.id}")
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -100,9 +128,8 @@ fun TogetherScreen(
     }
 }
 
-
 @Composable
-fun HuChungCard(huChung: HuChung) {
+fun HuChungCard(huChung: HuChung, onDelete: (HuChung) -> Unit, onClick: () -> Unit) {
     val context = LocalContext.current
     val iconId = remember(huChung.icon) {
         context.resources.getIdentifier(huChung.icon, "drawable", context.packageName)
@@ -111,13 +138,15 @@ fun HuChungCard(huChung: HuChung) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp)
+            .clickable { onClick() },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Icon tròn bên trái
             Box(
                 modifier = Modifier
                     .size(40.dp)
@@ -136,7 +165,7 @@ fun HuChungCard(huChung: HuChung) {
                     )
                 } else {
                     Icon(
-                        imageVector = Icons.Default.Home,
+                        imageVector = Icons.Default.Close,
                         contentDescription = null,
                         tint = Color.Gray,
                         modifier = Modifier.size(24.dp)
@@ -146,11 +175,12 @@ fun HuChungCard(huChung: HuChung) {
 
             Spacer(modifier = Modifier.width(12.dp))
 
+            // Nội dung giữa
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = huChung.ten, fontSize = 16.sp)
                 Text(text = huChung.ngayTao, fontSize = 12.sp, color = Color.Gray)
                 Text(
-                    text = "$0 saved of $0",
+                    text = huChung.mota,
                     fontSize = 12.sp,
                     modifier = Modifier.padding(top = 4.dp)
                 )
@@ -161,16 +191,17 @@ fun HuChungCard(huChung: HuChung) {
                         .padding(vertical = 4.dp),
                     color = Color(android.graphics.Color.parseColor(huChung.mausac))
                 )
-                Text(
-                    text = "0 days left",
-                    fontSize = 12.sp,
-                    color = Color.Gray
-                )
             }
 
-            Icon(Icons.Default.MoreVert, contentDescription = "Options")
+            // Nút X để xoá
+            IconButton(onClick = { onDelete(huChung) }) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Delete",
+                    tint = Color.Red
+                )
+            }
         }
     }
 }
-
 

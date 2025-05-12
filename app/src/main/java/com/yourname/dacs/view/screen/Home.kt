@@ -1,12 +1,14 @@
 package com.yourname.dacs.view.screen
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -38,13 +40,17 @@ import com.yourname.dacs.viewmodel.GiaoDichViewModel
 @Composable
 fun HomeScreen(navController: NavHostController) {
     val viewModel: DanhMucViewModel = viewModel()
+    val giaoDichViewModel: GiaoDichViewModel = viewModel()
     val tabs = listOf("Thu nhập", "Chi tiêu")
     var selectedTabIndex by remember { mutableStateOf(0) }
     var showDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
-    val giaoDichViewModel: GiaoDichViewModel = viewModel()
+
     val allDanhMuc = viewModel.danhMucList
     val categories = allDanhMuc.filter { it.loai == if (selectedTabIndex == 0) "thu" else "chi" }
+
+    // Dùng tạm flag cứng, có thể thay thế bằng state từ ViewModel hoặc Firebase sau
+    val hasNotifications by remember { mutableStateOf(true) }
 
     Scaffold(
         topBar = {
@@ -61,8 +67,21 @@ fun HomeScreen(navController: NavHostController) {
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* TODO: Xử lý thông báo */ }) {
-                        Icon(Icons.Default.Notifications, contentDescription = null)
+                    Box {
+                        IconButton(onClick = {
+                            navController.navigate("loimoi") // điều hướng đến LoiMoiScreen
+                        }) {
+                            Icon(Icons.Default.Notifications, contentDescription = "Thông báo")
+                        }
+                        if (hasNotifications) {
+                            Box(
+                                modifier = Modifier
+                                    .size(10.dp)
+                                    .align(Alignment.TopEnd)
+                                    .offset(x = (-2).dp, y = 2.dp)
+                                    .background(Color.Red, shape = CircleShape)
+                            )
+                        }
                     }
                 }
             )
@@ -108,14 +127,12 @@ fun HomeScreen(navController: NavHostController) {
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(categories) { item ->
-                    CategoryCard(item,giaoDichViewModel)
+                    CategoryCard(item, giaoDichViewModel)
                 }
-
                 item { AddCategoryCard { showDialog = true } }
                 item { DeleteCategoryCard { showDeleteDialog = true } }
             }
 
-            // Dialog Thêm Danh Mục
             if (showDialog) {
                 AddDanhMucDialog(
                     onDismiss = { showDialog = false },
@@ -127,7 +144,6 @@ fun HomeScreen(navController: NavHostController) {
                 )
             }
 
-            // Dialog Xoá Danh Mục
             if (showDeleteDialog) {
                 DeleteDanhMucDialog(
                     danhMucs = categories,
@@ -141,6 +157,7 @@ fun HomeScreen(navController: NavHostController) {
         }
     }
 }
+
 
 @Composable
 fun CategoryCard(item: DanhMuc, giaoDichViewModel: GiaoDichViewModel) {
