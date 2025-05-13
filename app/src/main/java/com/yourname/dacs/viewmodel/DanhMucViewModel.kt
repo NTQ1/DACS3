@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.yourname.dacs.model.DanhMuc
-import com.yourname.dacs.model.GiaoDich
+
 
 class DanhMucViewModel : ViewModel() {
 
