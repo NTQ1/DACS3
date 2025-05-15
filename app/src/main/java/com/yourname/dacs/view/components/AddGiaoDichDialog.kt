@@ -32,7 +32,7 @@ fun AddGiaoDichDialog(
                     if (parsedSoTien != null) {
                         val giaoDich = GiaoDich(
                             soTien = parsedSoTien,
-                            ghiChu = ghiChu,
+
                             danhMucId = danhMucId,
                             accountId = accountId,
                             thoiGian = thoiGian,
@@ -91,16 +91,7 @@ fun AddGiaoDichDialog(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
 
-                OutlinedTextField(
-                    value = ghiChu,
-                    onValueChange = { ghiChu = it },
-                    label = { Text("Ghi chú") },
-                    singleLine = true,
-                    shape = MaterialTheme.shapes.medium,
-                    modifier = Modifier.fillMaxWidth()
-                )
             }
         }
     )

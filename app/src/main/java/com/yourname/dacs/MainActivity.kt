@@ -15,6 +15,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.yourname.dacs.ui.theme.DACSTheme
 import com.yourname.dacs.view.screen.ChiTietHuChungScreen
+import com.yourname.dacs.view.screen.HistoryScreen
 import com.yourname.dacs.view.screen.HomeScreen
 import com.yourname.dacs.view.screen.LoginScreenUI
 import com.yourname.dacs.view.screen.LoiMoiScreen
@@ -80,6 +81,7 @@ fun AppNavigation() {
                 TogetherScreen(navController)
             }
             composable("loimoi") { LoiMoiScreen(navController) }
+            composable("history") { HistoryScreen(navController) }
 
             composable("chitiet/{huChungId}") { backStackEntry ->
                 val huChungId = backStackEntry.arguments?.getString("huChungId") ?: ""

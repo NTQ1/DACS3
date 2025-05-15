@@ -162,7 +162,7 @@ fun ChiTietHuChungScreen(
                                         Text(
                                             formatCurrency(thuNhap),
                                             color = Color(0xFF4CAF50),
-                                            fontSize = 20.sp
+                                            fontSize = 18.sp
                                         )
                                     }
 
@@ -172,7 +172,7 @@ fun ChiTietHuChungScreen(
                                             // Thêm dấu trừ trước số chi tiêu nếu chưa có
                                             text = if (chiTieu >= 0) "-${formatCurrency(chiTieu)}" else formatCurrency(chiTieu),
                                             color = Color(0xFFFF5722),
-                                            fontSize = 20.sp
+                                            fontSize = 18.sp
                                         )
                                     }
 
@@ -181,7 +181,7 @@ fun ChiTietHuChungScreen(
                                         Text(
                                             text = if (tongTien >= 0) "+${formatCurrency(tongTien)}" else "-${formatCurrency(-tongTien)}",
                                             color = if (tongTien >= 0) Color(0xFF4CAF50) else Color(0xFFFF5722),
-                                            fontSize = 20.sp
+                                            fontSize = 18.sp
                                         )
                                     }
                                 }
