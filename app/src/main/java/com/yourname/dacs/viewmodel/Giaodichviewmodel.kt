@@ -86,5 +86,35 @@ class GiaoDichViewModel : ViewModel() {
                 }
             })
     }
+    // 👇 Hàm xoá giao dịch theo ID
+    fun xoaGiaoDich(
+        giaoDichId: String,
+        onSuccess: () -> Unit = {},
+        onFailure: (Exception) -> Unit = {}
+    ) {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val accountId = currentUser?.uid
+
+        if (accountId == null) {
+            onFailure(Exception("Không xác định được người dùng."))
+            return
+        }
+
+        // Kiểm tra quyền xoá (xác minh giao dịch thuộc về người dùng hiện tại)
+        db.child(giaoDichId).get().addOnSuccessListener { snapshot ->
+            val giaoDich = snapshot.getValue(GiaoDich::class.java)
+
+            if (giaoDich != null && giaoDich.accountId == accountId) {
+                // Xoá giao dịch
+                db.child(giaoDichId).removeValue()
+                    .addOnSuccessListener { onSuccess() }
+                    .addOnFailureListener { onFailure(it) }
+            } else {
+                onFailure(Exception("Không có quyền xoá giao dịch này."))
+            }
+        }.addOnFailureListener {
+            onFailure(it)
+        }
+    }
 
 }

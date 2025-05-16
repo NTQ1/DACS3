@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
@@ -31,8 +32,9 @@ import java.util.*
 
 
 
+
 // Convert GiaoDich model to GiaoDichUI for display
-fun GiaoDich.toGiaoDichUI(): GiaoDichUI {
+fun GiaoDich.toGiaoDichUI(): GiaoDich {
     // Extract date from thoiGian (format: "yyyy-MM-dd HH:mm:ss")
     val date = try {
         val parts = thoiGian.split(" ")[0].split("-")
@@ -41,9 +43,10 @@ fun GiaoDich.toGiaoDichUI(): GiaoDichUI {
         "01/01/2025" // Default date if parsing fails
     }
 
-    return GiaoDichUI(
-        ngay = date,
-        danhMuc = tenDanhMuc,
+    return GiaoDich(
+        id = id, // Add ID to GiaoDichUI
+        thoiGian = date,
+        tenDanhMuc = tenDanhMuc,
         soTien = soTien,
         loai = loai,
         iconDanhMuc = iconDanhMuc,
@@ -54,15 +57,17 @@ fun GiaoDich.toGiaoDichUI(): GiaoDichUI {
 @Composable
 fun HistoryScreen(
     navController: NavHostController,
-    giaoDichViewModel: GiaoDichViewModel = viewModel()
+    giaoDichViewModel: GiaoDichViewModel = viewModel(),
+    onDeleted: () -> Unit = {}
 ) {
     // State for transactions
-    var transactions by remember { mutableStateOf<List<GiaoDichUI>>(emptyList()) }
+    var transactions by remember { mutableStateOf<List<GiaoDich>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    // Load data from Firebase
-    LaunchedEffect(key1 = Unit) {
+    // Function to load transactions
+    fun loadTransactions() {
+        isLoading = true
         giaoDichViewModel.layDanhSachGiaoDich(
             onDataReceived = { giaoDichList ->
                 // Convert the GiaoDich models to GiaoDichUI for display
@@ -76,11 +81,31 @@ fun HistoryScreen(
         )
     }
 
+    // Load data from Firebase
+    LaunchedEffect(key1 = Unit) {
+        loadTransactions()
+    }
+
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var currentYearMonth by remember { mutableStateOf(YearMonth.now()) }
 
     val selectedDateTransactions = transactions.filter {
-        it.ngay == selectedDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+        it.thoiGian == selectedDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+    }
+
+    // Handler for transaction deletion
+    val handleDeleteTransaction = { giaoDichId: String ->
+        giaoDichViewModel.xoaGiaoDich(
+            giaoDichId = giaoDichId,
+            onSuccess = {
+                // Reload the transactions after successful deletion
+                loadTransactions()
+                onDeleted() // Call the callback if needed
+            },
+            onFailure = { exception ->
+                errorMessage = "Lỗi khi xoá giao dịch: ${exception.message}"
+            }
+        )
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -155,7 +180,10 @@ fun HistoryScreen(
                         Text("Không có giao dịch trong ngày này", color = Color.Gray)
                     }
                 } else {
-                    TransactionList(selectedDateTransactions)
+                    TransactionList(
+                        transactions = selectedDateTransactions,
+                        onDelete = handleDeleteTransaction
+                    )
                 }
             }
         }
@@ -165,16 +193,25 @@ fun HistoryScreen(
 }
 
 @Composable
-fun TransactionList(transactions: List<GiaoDichUI>) {
+fun TransactionList(
+    transactions: List<GiaoDich>,
+    onDelete: (String) -> Unit
+) {
     LazyColumn {
         items(transactions) { transaction ->
-            TransactionItem(transaction)
+            TransactionItem(
+                transaction = transaction,
+                onDelete = onDelete
+            )
         }
     }
 }
 
 @Composable
-fun TransactionItem(transaction: GiaoDichUI) {
+fun TransactionItem(
+    transaction: GiaoDich,
+    onDelete: (String) -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -230,7 +267,7 @@ fun TransactionItem(transaction: GiaoDichUI) {
             Spacer(modifier = Modifier.width(16.dp))
 
             Text(
-                text = transaction.danhMuc,
+                text = transaction.tenDanhMuc,
                 fontWeight = FontWeight.Medium
             )
         }
@@ -242,6 +279,17 @@ fun TransactionItem(transaction: GiaoDichUI) {
                 fontWeight = FontWeight.Bold
             )
 
+            // Nút X để xoá - Now connected to the delete handler
+            IconButton(onClick = {
+                // Call the onDelete handler with the transaction ID
+                onDelete(transaction.id)
+            }) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Delete",
+                    tint = Color.Red
+                )
+            }
 
         }
     }

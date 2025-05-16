@@ -23,29 +23,31 @@ import com.yourname.dacs.view.screen.formatCurrency
 import java.time.LocalDate
 import java.time.YearMonth
 import java.util.*
+import com.yourname.dacs.model.GiaoDich
 
 data class CalendarDay(
     val date: Int,
     val isCurrentMonth: Boolean = true,
     val isToday: Boolean = false,
     val isSelected: Boolean = false,
-    val transactions: List<GiaoDichUI> = emptyList()
+    val transactions: List<GiaoDich> = emptyList()
 )
 
-data class GiaoDichUI(
-    val ngay: String,
-    val danhMuc: String,
-    val soTien: Double,
-    val loai: String, // "thu" hoặc "chi"
-    val iconDanhMuc: String = "", // Icon ID from Firebase
-    val mauSacDanhMuc: String = "#000000" // Color hex code from Firebase
-)
+//data class GiaoDichUI(
+//    val id: String,
+//    val ngay: String,
+//    val danhMuc: String,
+//    val soTien: Double,
+//    val loai: String, // "thu" hoặc "chi"
+//    val iconDanhMuc: String = "", // Icon ID from Firebase
+//    val mauSacDanhMuc: String = "#000000" // Color hex code from Firebase
+//)
 
 @Composable
 fun Calendar(
     yearMonth: YearMonth,
     selectedDate: LocalDate,
-    transactions: List<GiaoDichUI>,
+    transactions: List<GiaoDich>,
     onDateSelected: (LocalDate) -> Unit,
     onNavigateMonth: (Boolean) -> Unit
 ) {
@@ -95,7 +97,7 @@ fun CalendarHeader(
 fun CalendarGrid(
     yearMonth: YearMonth,
     selectedDate: LocalDate,
-    transactions: List<GiaoDichUI>,
+    transactions: List<GiaoDich>,
     onDateSelected: (LocalDate) -> Unit
 ) {
     val calendarDays = prepareCalendarDays(yearMonth, selectedDate, transactions)
@@ -140,7 +142,7 @@ fun CalendarGrid(
 fun prepareCalendarDays(
     yearMonth: YearMonth,
     selectedDate: LocalDate,
-    transactions: List<GiaoDichUI>
+    transactions: List<GiaoDich>
 ): List<CalendarDay> {
     val days = mutableListOf<CalendarDay>()
     val today = LocalDate.now()
@@ -164,7 +166,7 @@ fun prepareCalendarDays(
     for (day in 1..totalDaysInMonth) {
         val currentDate = LocalDate.of(yearMonth.year, yearMonth.month, day)
         val transInDay = transactions.filter {
-            it.ngay == currentDate.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+            it.thoiGian == currentDate.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"))
         }
 
         days.add(
@@ -231,7 +233,7 @@ fun CalendarDayItem(day: CalendarDay, onClick: () -> Unit) {
 }
 
 @Composable
-fun SummarySection(transactions: List<GiaoDichUI>) {
+fun SummarySection(transactions: List<GiaoDich>) {
     val thu = transactions.filter { it.loai == "thu" }.sumOf { it.soTien }
     val chi = transactions.filter { it.loai == "chi" }.sumOf { it.soTien }
     val tong = thu - chi
