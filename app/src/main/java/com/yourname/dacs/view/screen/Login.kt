@@ -24,7 +24,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun LoginScreenUI(
     onNavigateToRegister: () -> Unit = {},
-    onNavigateToForgotPassword: () -> Unit = {},
     onLoginSuccess: () -> Unit = {},
     customModifier: Modifier = Modifier,
     loginViewModel: LoginViewModel = viewModel()
@@ -34,9 +33,16 @@ fun LoginScreenUI(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var rememberPassword by remember { mutableStateOf(false) }
 
     var loginMessage by remember { mutableStateOf<String?>(null) }
     val coroutineScope = rememberCoroutineScope()
+
+    // Load saved credentials if available
+    LaunchedEffect(Unit) {
+
+
+    }
 
     Box(
         modifier = customModifier
@@ -134,6 +140,27 @@ fun LoginScreenUI(
                         )
                     )
 
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Remember Password Checkbox
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = rememberPassword,
+                            onCheckedChange = { rememberPassword = it },
+                            colors = CheckboxDefaults.colors(
+                                checkedColor = OrangeYellow,
+                                uncheckedColor = Color.Gray
+                            )
+                        )
+                        Text(
+                            text = "Ghi nhớ mật khẩu",
+                            modifier = Modifier.clickable { rememberPassword = !rememberPassword }
+                        )
+                    }
+
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Button(
@@ -145,6 +172,7 @@ fun LoginScreenUI(
                                     onResult = { success, message ->
                                         if (success) {
                                             loginMessage = "Đăng nhập thành công!"
+
                                             onLoginSuccess()
                                         } else {
                                             loginMessage = message ?: "Đăng nhập thất bại!"
@@ -171,14 +199,6 @@ fun LoginScreenUI(
                             modifier = Modifier.padding(top = 8.dp)
                         )
                     }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Text(
-                        text = "Quên mật khẩu?",
-                        color = OrangeYellow,
-                        modifier = Modifier.clickable { onNavigateToForgotPassword() }
-                    )
 
                     Spacer(modifier = Modifier.height(24.dp))
 
